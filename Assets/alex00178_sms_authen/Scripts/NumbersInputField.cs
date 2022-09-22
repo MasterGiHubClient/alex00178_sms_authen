@@ -27,6 +27,8 @@ public class NumbersInputField : MonoBehaviour
 
         public void SetValue(int _value)
         {
+            go.GetComponent<Animation>().Play();
+
             if(_value < 0)
             {
                 ResetValue();

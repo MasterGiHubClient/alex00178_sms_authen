@@ -75,6 +75,7 @@ public class UsersManager : MonoBehaviour
         }
         else
         {
+            success.Invoke(true);
             Responce responce = JsonUtility.FromJson<Responce>(webRequest.downloadHandler.text);
             usersContainer = JsonUtility.FromJson<UsersContainer>(Encoding.UTF8.GetString(Convert.FromBase64String(responce.content)));
             sha = responce.sha;
