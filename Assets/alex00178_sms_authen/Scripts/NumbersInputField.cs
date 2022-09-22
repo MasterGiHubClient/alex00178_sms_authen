@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Linq;
 
@@ -20,6 +21,7 @@ public class NumbersInputField : MonoBehaviour
 
         public void ResetValue()
         {
+            value = -1;
             textComponent.text = defaultValue;
         }
 
@@ -47,21 +49,25 @@ public class NumbersInputField : MonoBehaviour
     }
 
     int currentCellID;
+    [HideInInspector]
     public string inputCode;
 
+    [SerializeField] GameObject pressPrefab;
+    [SerializeField] Transform pressParent;
+
+    [Space(10)]
     [SerializeField] NumberCell[] numberCells;
 
     private void OnEnable()
+
     {
         currentCellID = -1;
-
         foreach (NumberCell numberCell in numberCells)
         {
             numberCell.ResetValue();
             numberCell.go.SetActive(false);
         }
 
-        //AuthManager.code = 1234.ToString();
         for (int i = 0; i < AuthManager.code.Length; i++)
         {
             numberCells[i].go.SetActive(true);
@@ -93,6 +99,7 @@ public class NumbersInputField : MonoBehaviour
 
                 currentCellID++;
                 numberCells[currentCellID].SetValue(value);
+                Instantiate(pressPrefab, EventSystem.current.currentSelectedGameObject.transform.position, Quaternion.Euler(Vector3.zero), pressParent);
             }
             else
             {

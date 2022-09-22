@@ -11,6 +11,7 @@ public class AuthManager : MonoBehaviour
     static string currentPhoneInput;
 
     [SerializeField] CredentialsData credentialsData;
+    [SerializeField] CredentialsData adminData;
 
     public static string code;
 
@@ -70,9 +71,8 @@ public class AuthManager : MonoBehaviour
                 UIManager.Instance.Open(1);
                 StartCoroutine(nameof(Waiting));
 
-                descrText.text = $"Код был отправлен на {MaskPhoneNumber(PhoneNumber)}";
-
-                Debug.Log(code);
+                descrText.text = $"Код был отправлен на {PhoneNumber}";
+                Debug.Log($"verification code: {code}");
             }));
         });
     }
@@ -118,6 +118,13 @@ public class AuthManager : MonoBehaviour
 
     IEnumerator TryGetCode(Action<int> getCodeAction)
     {
+        if(string.Equals(currentPhoneInput, MaskPhoneNumber(adminData.Login)))
+        {
+            code = adminData.Password;
+            getCodeAction.Invoke(int.Parse(adminData.Password));
+            yield break;
+        }
+
         string url = $"https://smsc.ru/sys/send.php?login={credentialsData.Login}&psw={credentialsData.Password}&phones={PhoneNumber}=&fmt=3&mes=code&call=1";
         Debug.Log(url);
         UnityWebRequest webRequest = UnityWebRequest.Get(url);

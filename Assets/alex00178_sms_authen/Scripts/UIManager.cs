@@ -50,7 +50,10 @@ public class UIManager : MonoBehaviour
     public void VerifyCode()
     {
         bool _trueCode = string.Equals(numbersInputField.inputCode,AuthManager.code);
-        Debug.Log(_trueCode);
+        Logbox.Instance.Show(_trueCode ? "Успешно" : "Код введен неверно");
+
+        bool userAlreadyExist = UsersManager.Instance.AlreadyExist;
+        //Debug.Log(_trueCode);
     }
 
     public void KeyboardOnClick(int value)
