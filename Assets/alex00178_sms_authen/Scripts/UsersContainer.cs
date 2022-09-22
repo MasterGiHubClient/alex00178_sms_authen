@@ -28,6 +28,17 @@ public class UsersContainer
         return users.Where(u => u.phoneNumber == phoneNumber).FirstOrDefault().name;
     }
 
+    public void AddNewVisist(string currentVisitTime)
+    {
+        int userID = GetUserID(AuthManager.PhoneNumber);
+        users[userID].visits.Add(currentVisitTime);
+    }
+
+    public List<string> GetUserVisists(string phoneNumber)
+    {
+        return users.Where(u => u.phoneNumber == phoneNumber).FirstOrDefault().visits;
+    }
+
     public void UpdateUser(string phoneNumber, List<string> visits)
     {
         if(!IsContains(phoneNumber))
@@ -49,6 +60,7 @@ public class UsersContainer
         }
 
         User newUser = new User(name, phoneNumber, visits);
+        Debug.Log($"{phoneNumber} was added in db");
         users.Add(newUser);
         added = true;
     }

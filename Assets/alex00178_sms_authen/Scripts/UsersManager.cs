@@ -7,7 +7,7 @@ using System.Text;
 
 public class UsersManager : MonoBehaviour
 {
-    const string token = "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";
+    const string token = "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";
 
     private static UsersManager instance;
     public static UsersManager Instance
@@ -26,6 +26,11 @@ public class UsersManager : MonoBehaviour
     string sha;
     [SerializeField] UsersContainer usersContainer;
 
+    public List<User> Users
+    {
+        get => usersContainer.users;
+    }
+
     public bool AlreadyExist
     {
         get => usersContainer.IsContains(AuthManager.PhoneNumber);
@@ -39,6 +44,16 @@ public class UsersManager : MonoBehaviour
         }
 
         return usersContainer.GetUserName(AuthManager.PhoneNumber);
+    }
+
+    public List<string> GetUserVisists()
+    {
+        if (!AlreadyExist)
+        {
+            Debug.LogError($"user {AuthManager.PhoneNumber} missing in db");
+        }
+
+        return usersContainer.GetUserVisists(AuthManager.PhoneNumber);
     }
 
     private void Start()
@@ -60,18 +75,23 @@ public class UsersManager : MonoBehaviour
         }
     }
 
-    public void TryAddNewUser(string name, string phoneNumber, List<string> visits)
+    public void AddNewVisist(string newVisisTime)
     {
-        usersContainer.AddUser(name, phoneNumber, visits, out bool added);
-        if(!added)
-        {
-            return;
-        }
-
+        usersContainer.AddNewVisist(newVisisTime);
         StartCoroutine(UpdateDB(status =>
         {
             Debug.Log($"db update status: {status}");
         }));
+    }
+
+    public void TryAddNewUser(string name, string phoneNumber, List<string> visits, out bool isAdded)
+    {
+        usersContainer.AddUser(name, phoneNumber, visits, out bool added);
+        isAdded = added;
+        if(!added)
+        {
+            return;
+        }
     }
 
     IEnumerator DownloadDB(Action<bool> success)

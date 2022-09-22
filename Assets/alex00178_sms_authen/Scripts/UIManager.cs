@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
+using System.Collections.Generic;
+using System;
 
 public class UIManager : MonoBehaviour
 {
@@ -25,6 +26,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject inputCodeGO;
     [SerializeField] GameObject createProfileGO;
     [SerializeField] GameObject profileGO;
+    [SerializeField] GameObject adminGO;
 
     [Header("create user ui")]
     [SerializeField] InputField nameInput;
@@ -32,6 +34,12 @@ public class UIManager : MonoBehaviour
 
     [Header("profile ui")]
     [SerializeField] Text userNameText;
+    [SerializeField] GameObject visitGOPrefab;
+    [SerializeField] Transform visitParent;
+
+    [Header("admin ui")]
+    [SerializeField] GameObject userGOPrefab;
+    [SerializeField] Transform userParent;
 
     [Header("numbers holder")]
     [SerializeField] NumbersInputField numbersInputField;
@@ -56,8 +64,32 @@ public class UIManager : MonoBehaviour
                 return;
             }
 
-            UsersManager.Instance.TryAddNewUser(Name, AuthManager.PhoneNumber, new System.Collections.Generic.List<string>());
+            UsersManager.Instance.TryAddNewUser(Name, AuthManager.PhoneNumber, new List<string>(), out bool isAdded);
+            if(isAdded)
+            {
+                VerifyCode();
+            }
         });
+    }
+
+    void ClearLastVisists()
+    {
+        foreach (Transform t in visitParent)
+        {
+            Destroy(t.gameObject);
+        }
+
+        visitParent.DetachChildren();
+    }
+
+    void ClearLastUsers()
+    {
+        foreach(Transform t in userParent)
+        {
+            Destroy(t.gameObject);
+        }
+
+        userParent.DetachChildren();
     }
 
     public void Open(int windowID)
@@ -67,7 +99,8 @@ public class UIManager : MonoBehaviour
             0 => sendCodeGO,
             1 => inputCodeGO,
             2 => createProfileGO,
-            3 => profileGO
+            3 => profileGO,
+            4 => adminGO
         };
 
         if(_lastWindow)
@@ -81,22 +114,44 @@ public class UIManager : MonoBehaviour
 
     public void VerifyCode()
     {
-        bool _trueCode = string.Equals(numbersInputField.inputCode,AuthManager.code);
-        Logbox.Instance.Show(0, _trueCode ? "Успешно" : "Код введен неверно");
+        bool _trueCode = string.Equals(numbersInputField.inputCode, AuthManager.code);
         if(!_trueCode)
         {
+            Logbox.Instance.Show(0, "Код введен неверно");
             return;
         }
 
         bool userAlreadyExist = UsersManager.Instance.AlreadyExist;
         Debug.Log($"{AuthManager.PhoneNumber} exist? - {userAlreadyExist}");
-        if(userAlreadyExist)
+        if(userAlreadyExist && !AuthManager.Instance.CurrentUserIsAdmin)
         {
+            UsersManager.Instance.AddNewVisist(DateTime.Now.ToString("dd/MM/yyyy H:mm"));
             userNameText.text = UsersManager.Instance.GetUserName();
-            Logbox.Instance.Show(0.25f, $"Добрый день, {userNameText.text}");
+
+            ClearLastVisists();
+
+            foreach (string s in UsersManager.Instance.GetUserVisists())
+            {
+                Instantiate(visitGOPrefab, visitParent).GetComponent<VisitGO>().SetVisit(s);
+            }
+
+            Logbox.Instance.Show(0.1f, $"Добрый день, {userNameText.text}");
+        }
+        
+        if(AuthManager.Instance.CurrentUserIsAdmin)
+        {
+            ClearLastUsers();
+
+            foreach(User u in UsersManager.Instance.Users)
+            {
+                Instantiate(userGOPrefab, userParent).GetComponent<UserGO>().SetUserInfo(u);
+            }
+
+            Debug.Log($"login as admin {AuthManager.PhoneNumber}");
+            Logbox.Instance.Show(0.1f, $"Добрый день, ADMIN");
         }
 
-        Open(userAlreadyExist ? 3 : 2);
+        Open(!userAlreadyExist ? AuthManager.Instance.CurrentUserIsAdmin ? 4 : 2 : AuthManager.Instance.CurrentUserIsAdmin ? 4 : 3);
     }
 
     public void KeyboardOnClick(int value)

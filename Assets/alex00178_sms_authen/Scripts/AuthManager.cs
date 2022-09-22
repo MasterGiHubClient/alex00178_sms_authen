@@ -7,6 +7,20 @@ using UnityEngine.Networking;
 
 public class AuthManager : MonoBehaviour
 {
+    private static AuthManager instance;
+    public static AuthManager Instance
+    {
+        get
+        {
+            if(!instance)
+            {
+                instance = FindObjectOfType<AuthManager>();
+            }
+
+            return instance;
+        }
+    }
+
     const float waitSec = 90.0f;
     static string currentPhoneInput;
 
@@ -14,6 +28,11 @@ public class AuthManager : MonoBehaviour
     [SerializeField] CredentialsData adminData;
 
     public static string code;
+
+    public bool CurrentUserIsAdmin
+    {
+        get => string.Equals(PhoneNumber, adminData.Login);
+    }
 
     [Space(10)]
     [SerializeField] InputField phoneInput;
@@ -37,6 +56,9 @@ public class AuthManager : MonoBehaviour
     private void OnEnable()
     {
         loginBtn.interactable = false;
+        phoneInput.interactable = true;
+        phoneInput.characterLimit = 10;
+        phoneInput.contentType = InputField.ContentType.DecimalNumber;
     }
 
     private void Start()
@@ -52,6 +74,11 @@ public class AuthManager : MonoBehaviour
         {
             if(currentPhoneInput == null || currentPhoneInput.Length != 10)
             {
+                loginBtn.interactable = false;
+
+                phoneInput.characterLimit = 10;
+                phoneInput.contentType = InputField.ContentType.DecimalNumber;
+
                 currentPhoneInput = string.Empty;
                 phoneInput.text = string.Empty;
 
@@ -59,6 +86,8 @@ public class AuthManager : MonoBehaviour
             }
 
             loginBtn.interactable = true;
+            phoneInput.characterLimit = 17;
+            phoneInput.contentType = InputField.ContentType.Standard;
             phoneInput.text = MaskPhoneNumber(currentPhoneInput);
         });
 
@@ -67,6 +96,7 @@ public class AuthManager : MonoBehaviour
             StartCoroutine(TryGetCode(_code =>
             {
                 code = _code.ToString();
+                phoneInput.interactable = false;
 
                 UIManager.Instance.Open(1);
                 StartCoroutine(nameof(Waiting));
@@ -114,11 +144,15 @@ public class AuthManager : MonoBehaviour
 
         loginBtn.gameObject.SetActive(true);
         spinnerGO.SetActive(false);
+
+        phoneInput.interactable = true;
+        phoneInput.characterLimit = 10;
+
     }
 
     IEnumerator TryGetCode(Action<int> getCodeAction)
     {
-        if(string.Equals(currentPhoneInput, MaskPhoneNumber(adminData.Login)))
+        if(CurrentUserIsAdmin)
         {
             code = adminData.Password;
             getCodeAction.Invoke(int.Parse(adminData.Password));
