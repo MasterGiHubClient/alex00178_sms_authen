@@ -23,6 +23,11 @@ public class UsersContainer
         return numbers.Contains(phoneNumber);
     }
 
+    public string GetUserName(string phoneNumber)
+    {
+        return users.Where(u => u.phoneNumber == phoneNumber).FirstOrDefault().name;
+    }
+
     public void UpdateUser(string phoneNumber, List<string> visits)
     {
         if(!IsContains(phoneNumber))

@@ -7,6 +7,8 @@ using System.Text;
 
 public class UsersManager : MonoBehaviour
 {
+    const string token = "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";
+
     private static UsersManager instance;
     public static UsersManager Instance
     {
@@ -27,6 +29,16 @@ public class UsersManager : MonoBehaviour
     public bool AlreadyExist
     {
         get => usersContainer.IsContains(AuthManager.PhoneNumber);
+    }
+
+    public string GetUserName()
+    {
+        if(!AlreadyExist)
+        {
+            Debug.LogError($"user {AuthManager.PhoneNumber} missing in db");
+        }
+
+        return usersContainer.GetUserName(AuthManager.PhoneNumber);
     }
 
     private void Start()
@@ -85,7 +97,7 @@ public class UsersManager : MonoBehaviour
     IEnumerator UpdateDB(Action<bool> success)
     {          
         UnityWebRequest webRequest = new UnityWebRequest("https://api.github.com/repos/MasterGiHubClient/alex00178_sms_authen/contents/db.json", "PUT");
-        webRequest.SetRequestHeader("Authorization", "Bearer " + "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");
+        webRequest.SetRequestHeader("Authorization", "Bearer " + token);
 
         string dbJson = JsonUtility.ToJson(usersContainer);
         byte[] dbBytes = Encoding.UTF8.GetBytes(dbJson);

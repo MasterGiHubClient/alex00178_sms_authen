@@ -1,4 +1,5 @@
 using UnityEngine.UI;
+using System.Collections;
 using UnityEngine;
 
 public class Logbox : MonoBehaviour
@@ -20,17 +21,23 @@ public class Logbox : MonoBehaviour
     [SerializeField] Animation anim;
     [SerializeField] AudioSource source;
 
-    public void Show(string msg)
+    public void Show(float delay, string msg)
     {
+        StartCoroutine(Show_Process(delay, msg));
+    }
+
+    IEnumerator Show_Process(float sec, string msg)
+    {
+        yield return new WaitForSeconds(sec);
         logText.text = msg;
 
-        if(anim.isPlaying)
+        if (anim.isPlaying)
         {
             anim.Stop();
         }
         anim.Play();
 
-        if(source.isPlaying)
+        if (source.isPlaying)
         {
             source.Stop();
         }
